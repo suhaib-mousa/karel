@@ -8,229 +8,147 @@ import stanford.karel.*;
 
 
 public class Homework extends SuperKarel {
-    int steps, xDimension,yDimension;
-    // counting steps while putting beepers
-    public void puttingBeeper(){
-        move();
-        if (!beepersPresent()){
+    private int steps = 1;
+    private int xAxis = 0;
+    private int yAxis = 0;
+
+    private boolean isValidXAxis() {
+        return xAxis != 1 && xAxis != 2;
+    }
+
+    private boolean isValidYAxis() {
+        return yAxis != 1 && yAxis != 2;
+    }
+    private void moveAndPlaceBeeperInYAxis() {
+        step();
+        if (isValidXAxis() && !beepersPresent()) {
             putBeeper();
         }
+    }
+    private void moveAndPlaceBeeperInXAxis() {
+        step();
+        if (isValidYAxis() && !beepersPresent()) {
+            putBeeper();
+        }
+    }
+    private void step() {
+        move();
         steps++;
     }
-    // counting steps while moving
-    public void moving(){
-        move();
-        steps++;
-    }
 
-    // function for counting the y dimension
-    public void getYDimension(){
-        if (xDimension==1 || xDimension==2){
-            while(frontIsClear()) {
-                moving();
-                yDimension++;
-            }
-            yDimension++;
-            return;
-        }
-        while(frontIsClear()){
-            puttingBeeper();
-            yDimension++;
-        }
-        yDimension++;
-
-
-    }
-    // function for counting the x dimension
-    public void getXDimension(){
-        if (!frontIsClear()){
-            xDimension=1;
-            turnLeft();
-            return;
-        }
-        while(frontIsClear()){
-            moving();
-            xDimension++;
-        }
-        xDimension++;
-        turnAround();
-        if (xDimension%2 == 0){
-            for (int i=0;i<xDimension/2 -1;i++){
-                moving();
-            }
-        }
-        else {
-            for (int i=0;i<xDimension/2;i++){
-                moving();
-            }
-        }
-        turnRight();
-        if (!beepersPresent()&&xDimension!=2){
-            putBeeper();
-        }
-    }
-    public void checkXDimension(){
-
-        // not executing the code if the matrix is 2X2
-        if (xDimension==2 && yDimension==2){
-            return;
-        }
-        if (xDimension%2==0){
-            turnLeft();
-            if (xDimension != 2)
-                puttingBeeper();
-            turnLeft();
-        }
-        else {
-            turnAround();
-        }
-    }
-    public void evenYDimension() {
-        if (xDimension==1){
-            for (int i=0;i<yDimension/2-2;i++){
-                moving();
-            }
-            puttingBeeper();
-            puttingBeeper();
-            return;
-        }
-
-        for (int i = 0; i < yDimension / 2 - 1; i++) {
-            if (xDimension==2){
-                moving();
-                continue;
-            }
-            puttingBeeper();
-        }
-        if (yDimension == 2) {
-            puttingBeeper();
-        } else {
-            turnRight();
-            while (frontIsClear()) {
-                puttingBeeper();
-            }
-            turnLeft();
-            puttingBeeper();
-            turnLeft();
-            while (frontIsClear()) {
-                puttingBeeper();
-            }
-            turnLeft();
-            puttingBeeper();
-            turnLeft();
-
-            for (int i = 0; i < xDimension / 2; i++) {
-
-                puttingBeeper();
-            }
-            if (xDimension%2!=0){
-                return;
-            }
-            turnLeft();
-            while (frontIsClear()) {
-                if (xDimension==2){
-                    moving();
-                    continue;
-                }
-                puttingBeeper();
-            }
-        }
-    }
-    public void oddYDimension(){
-        if (xDimension%2==0){
-            for (int i=0;i<yDimension/2;i++){
-                if (xDimension==2){
-                    moving();
-                    continue;
-                }
-                puttingBeeper();
-            }
-        }
-        else {
-            for (int i=0;i<yDimension/2;i++){
-                moving();
-            }
-        }
-
-        if (xDimension==1){
-            putBeeper();
-            return;
-        }
-        turnRight();
-        while (frontIsClear()){
-            puttingBeeper();
-        }
-        turnAround();
-        while (frontIsClear()){
-            puttingBeeper();
-        }
-        if (xDimension%2==0) {
-            turnAround();
-            for (int i=0;i<xDimension/2;i++){
-                moving();
-            }
-            turnLeft();
-            while (frontIsClear()){
-                if (xDimension==2){
-                    moving();
-                    continue;
-                }
-                puttingBeeper();
-            }
-
-        }
-    }
-    public void backToOrigin(){
-        // special case if the matrix was 2X2
-        if (xDimension==2 && yDimension==2){
-
-            turnAround();
-            while (frontIsClear()){
-                if (beepersPresent())
-                    pickBeeper();
-                moving();
-            }
-            if (beepersPresent())
-                pickBeeper();
-            turnRight();
-            while (frontIsClear()){
-                if (beepersPresent())
-                    pickBeeper();
-                moving();
-            }
-
-            return;
-        }
-        if (facingNorth()||facingSouth()){
-            turnRight();
-        }
-        else if (facingEast()){
-            turnAround();
-        }
-        while (frontIsClear()){
-            moving();
-        }
-        if (leftIsClear()){
-            turnLeft();
-            while (frontIsClear()){
-                moving();
-            }
-        }
-    }
-    public void checkYDimension(){
-        if (yDimension==1){
-            return;
-        }
-        if (xDimension==2 && yDimension==2){
-            return;
-        }
-        if (yDimension%2==0){
-            evenYDimension();
-        }
-        else {
-            oddYDimension();
-        }
-    }
     public void run() {
+        initializeCounters();
+        startMission();
+        returnToOrigin();
+        System.out.println("The steps count: " + steps);
+    }
+
+    private void initializeCounters() {
+        steps = 1; // count steps, initialized with 1 to count first step
+        xAxis= 0; // count x units
+        yAxis =0; // count y units
+    }
+
+    private void startMission() {
+        discoverXAxis(); // count the x-axis then back to origin depending on even or odd
+        discoverYAxis(); // count the y-axis
+
+        placeBeepersInYAxis();
+        placeBeepersInXAxis();
+
+        while (frontIsClear()) {
+            moveAndPlaceBeeperInYAxis();
+        }
+    }
+
+    private void placeBeepersInXAxis() {
+        if (!isValidYAxis()){
+            return;
+        }
+        turnLeft();
+        while (frontIsClear()){
+            moveAndPlaceBeeperInXAxis();
+        }
+        turnRight();
+
+        if (yAxis % 2 == 0) {
+            moveAndPlaceBeeperInXAxis();
+        }
+        turnRight();
+
+
+        while (frontIsClear()){
+            moveAndPlaceBeeperInXAxis();
+        }
+
+        turnRight();
+        if (yAxis % 2 == 0) {
+            moveAndPlaceBeeperInXAxis();
+        }
+        turnRight();
+
+        int middleOfX = xAxis % 2 == 0 ? xAxis / 2 - 1 : xAxis / 2;
+        for (int i = 1; i <= middleOfX; i++){
+            moveAndPlaceBeeperInXAxis();
+        }
+        turnRight();
+    }
+    private void placeBeepersInYAxis() {
+        int middleOfY = yAxis % 2 == 0 ? yAxis / 2 - 1 : yAxis / 2;
+        turnLeft();
+
+        // special case
+        if (!isValidXAxis()) {
+            turnLeft();
+            //back to the middle - 1
+            for (int i = 1; i < middleOfY; i++) {
+                step();
+            }
+            moveAndPlaceBeeperInXAxis();
+            return;
+        }
+
+        if (xAxis % 2 == 0) {
+            moveAndPlaceBeeperInYAxis();
+        }
+        turnLeft();
+        for (int i = 1; i <= middleOfY; i++) {
+            moveAndPlaceBeeperInYAxis();
+        }
+    }
+    private  void  discoverYAxis() {
+        yAxis++; // count the first step where the karl starting the mission
+        while (frontIsClear()){
+            moveAndPlaceBeeperInYAxis();
+            yAxis++;
+        }
+    }
+    private void discoverXAxis() {
+        xAxis++; // count the first step where karl stands
+        while (frontIsClear()){
+            step();
+            xAxis++;
+        }
+        moveToStartPoint();
+    }
+    private void moveToStartPoint() {
+        turnAround();
+        int startPoint = xAxis % 2 == 0 ? xAxis / 2 - 1: xAxis / 2;
+        for (int i = 1; i < startPoint; i++){
+            step();
+        }
+        if (startPoint > 0) { // to ensure karl can step
+            moveAndPlaceBeeperInYAxis();
+        }
+        turnRight();
+    }
+
+    private void returnToOrigin() {
+        turnRight();
+        while (frontIsClear()){
+            step();
+        }
+        turnRight();
+        turnRight();
     }
 }
